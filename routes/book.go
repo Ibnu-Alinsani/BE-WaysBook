@@ -17,5 +17,5 @@ func BookRoutes(e *echo.Group) {
 	e.GET("/book/:id", h.GetBookById)
 	e.POST("/book", middleware.UploadFile(h.AddBook))
 	e.DELETE("/book/:id", middleware.Auth(h.DeleteBook))
-	e.PATCH("/book/:id", middleware.UpdateBook(h.UpdateBook))
+	e.PATCH("/book/:id", middleware.UploadFile(h.UpdateBook))
 }

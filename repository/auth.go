@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"waysbook/models"
 	"errors"
+	"waysbook/models"
+
 	"gorm.io/gorm"
 )
 
@@ -17,7 +18,7 @@ func RepositoryAuth(db *gorm.DB) *repository {
 }
 
 func (r *repository) Register(user models.User) (models.User, error) {
-	var count int 
+	var count int
 	err := r.db.Raw("SELECT COUNT(*) from users WHERE email=?", user.Email).Scan(&count).Error
 
 	if err != nil {
@@ -31,7 +32,7 @@ func (r *repository) Register(user models.User) (models.User, error) {
 	}
 
 	return user, err
-} 
+}
 
 func (r *repository) Login(email string) (models.User, error) {
 	var user models.User
@@ -43,7 +44,7 @@ func (r *repository) Login(email string) (models.User, error) {
 
 func (r *repository) CheckAuth(id int) (models.User, error) {
 	var user models.User
-	err := r.db.First(&user, id).Error
+	err := r.db.Preload("CartItem").Preload("Transaction.Book").First(&user, id).Error
 
 	return user, err
 }

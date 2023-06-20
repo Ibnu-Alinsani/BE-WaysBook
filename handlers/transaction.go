@@ -162,24 +162,15 @@ func (h *TransactionHandler) AddTransaction(c echo.Context) error {
 
 	snapResp, _ := s.CreateTransaction(req)
 
-	err = h.TransactionRepository.Delete(int(userId))
+	// user.CartItem = nil
+	// _, err = h.TransactionRepository.UpdateUserCart(user)
 
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dtoresult.ErrorResult{
-			Code:    http.StatusBadRequest,
-			Message: err.Error(),
-		})
-	}
-
-	user.CartItem = nil
-	_, err = h.TransactionRepository.UpdateUserCart(user)
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dtoresult.ErrorResult{
-			Code:    http.StatusBadRequest,
-			Message: err.Error(),
-		})
-	}
+	// if err != nil {
+	// 	return c.JSON(http.StatusBadRequest, dtoresult.ErrorResult{
+	// 		Code:    http.StatusBadRequest,
+	// 		Message: err.Error(),
+	// 	})
+	// }
 
 	return c.JSON(http.StatusOK, dtoresult.SuccessResult{
 		Code: http.StatusOK,
@@ -251,7 +242,6 @@ func sendEmail(status string, transaction models.Transaction) {
 	}
 }
 
-
 func (h *TransactionHandler) Notification(c echo.Context) error {
 	var notificationPayload map[string]interface{}
 
@@ -265,7 +255,6 @@ func (h *TransactionHandler) Notification(c echo.Context) error {
 	transactionStatus := notificationPayload["transaction_status"].(string)
 	fraudStatus := notificationPayload["fraud_status"].(string)
 	orderid := notificationPayload["order_id"].(string)
-
 	order_id, _ := strconv.Atoi(orderid)
 
 	transaction, err := h.TransactionRepository.GetTransactionById(int(order_id))
@@ -280,6 +269,15 @@ func (h *TransactionHandler) Notification(c echo.Context) error {
 	if transactionStatus == "capture" {
 		if fraudStatus == "accept" {
 			h.TransactionRepository.UpdateTransaction("success", transaction.Id)
+			err = h.TransactionRepository.Delete(transaction.UserId)
+
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, dtoresult.ErrorResult{
+					Code:    http.StatusBadRequest,
+					Message: err.Error(),
+				})
+			}
+
 			sendEmail("success", transaction)
 		} else if fraudStatus == "deny" {
 			h.TransactionRepository.UpdateTransaction("deny", transaction.Id)
@@ -287,6 +285,14 @@ func (h *TransactionHandler) Notification(c echo.Context) error {
 
 	} else if transactionStatus == "settlement" {
 		h.TransactionRepository.UpdateTransaction("success", transaction.Id)
+		err = h.TransactionRepository.Delete(transaction.UserId)
+
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dtoresult.ErrorResult{
+				Code:    http.StatusBadRequest,
+				Message: err.Error(),
+			})
+		}
 		sendEmail("success", transaction)
 	} else if transactionStatus == "deny" {
 		h.TransactionRepository.UpdateTransaction("failed", transaction.Id)

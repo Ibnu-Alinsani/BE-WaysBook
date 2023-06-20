@@ -5,14 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	// "strconv"
-	// "waysbook/pkg/postgresql"
-	// "waysbook/repository"
 
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
-
-	// "gopkg.in/gographics/imagick.v3/imagick"
 
 	"github.com/labstack/echo/v4"
 )
@@ -40,9 +35,8 @@ func UploadFile(next echo.HandlerFunc) echo.HandlerFunc {
 
 		cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
 		resp, err := cld.Upload.Upload(ctx, src, uploader.UploadParams{Folder: "waysbook/book"})
-
 		if err != nil {
-			fmt.Println(err.Error())
+			return c.JSON(http.StatusBadRequest, err)
 		}
 
 		image, err := c.FormFile("image")
@@ -108,7 +102,6 @@ func UploadFile(next echo.HandlerFunc) echo.HandlerFunc {
 // 	}
 // }
 
-
 // func UpdateUser(next echo.HandlerFunc) echo.HandlerFunc {
 // 	return func(c echo.Context) error {
 
@@ -140,7 +133,7 @@ func UploadFile(next echo.HandlerFunc) echo.HandlerFunc {
 // 		if user.PublicIDAvatar != "" {
 // 			_, err = cld.Upload.Destroy(ctx, uploader.DestroyParams{
 // 				PublicID: user.PublicIDAvatar})
-	
+
 // 			if err != nil {
 // 				fmt.Println(err.Error())
 // 			}
@@ -174,14 +167,14 @@ func UploadFile(next echo.HandlerFunc) echo.HandlerFunc {
 // 		if book.PublicIdBook != "" && book.PublicIdThumbnail != "" {
 // 			_, err := cld.Upload.Destroy(ctx, uploader.DestroyParams{
 // 				PublicID: book.PublicIdBook})
-	
+
 // 			if err != nil {
 // 				fmt.Println(err.Error())
 // 			}
 
 // 			_, err = cld.Upload.Destroy(ctx, uploader.DestroyParams{
 // 				PublicID: book.PublicIdThumbnail})
-	
+
 // 			if err != nil {
 // 				fmt.Println(err.Error())
 // 			}
